@@ -12,19 +12,23 @@ export function Register() {
     const [password, setPassword] = useState("")
     const [role, setRole] = useState<'player' | 'admin'>('player')
     const [isLoading, setIsLoading] = useState(false)
-    const { login } = useAuth()
+    const [error, setError] = useState("")
+    const { register } = useAuth()
     const navigate = useNavigate()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
+        setError("")
 
-        // Simulate API call
-        setTimeout(() => {
-            login(email, role)
-            setIsLoading(false)
+        try {
+            await register(email, password, name, role)
             navigate(role === 'admin' ? '/admin' : '/player')
-        }, 1000)
+        } catch (err: any) {
+            setError(err.response?.data?.message || "Error al registrarse")
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -36,14 +40,20 @@ export function Register() {
 
             <Card className="p-6 bg-white/5 border-none">
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded-lg text-sm text-center">
+                            {error}
+                        </div>
+                    )}
+
                     {/* Role Selection */}
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <button
                             type="button"
                             onClick={() => setRole('player')}
                             className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all ${role === 'player'
-                                ? 'bg-primary/20 border-primary text-primary'
-                                : 'bg-white/5 border-transparent text-gray-400 hover:bg-white/10'
+                                    ? 'bg-primary/20 border-primary text-primary'
+                                    : 'bg-white/5 border-transparent text-gray-400 hover:bg-white/10'
                                 }`}
                         >
                             <User className="w-6 h-6 mb-2" />
@@ -53,8 +63,8 @@ export function Register() {
                             type="button"
                             onClick={() => setRole('admin')}
                             className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all ${role === 'admin'
-                                ? 'bg-secondary/20 border-secondary text-secondary'
-                                : 'bg-white/5 border-transparent text-gray-400 hover:bg-white/10'
+                                    ? 'bg-secondary/20 border-secondary text-secondary'
+                                    : 'bg-white/5 border-transparent text-gray-400 hover:bg-white/10'
                                 }`}
                         >
                             <Shield className="w-6 h-6 mb-2" />

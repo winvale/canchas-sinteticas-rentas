@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import api from '../services/api'
 
-type UserRole = 'admin' | 'player'
+type UserRole = 'admin' | 'player' | 'user'
 
 interface User {
-    id: string
+    id: number
     name: string
     email: string
     role: UserRole
@@ -11,7 +12,8 @@ interface User {
 
 interface AuthContextType {
     user: User | null
-    login: (email: string, role: UserRole) => void
+    login: (email: string, password: string) => Promise<void>
+    register: (email: string, password: string, name: string, role?: string) => Promise<void>
     logout: () => void
     isLoading: boolean
 }
@@ -25,30 +27,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         // Check for stored user on mount
         const storedUser = localStorage.getItem('canchas_user')
-        if (storedUser) {
+        const token = localStorage.getItem('token')
+        if (storedUser && token) {
             setUser(JSON.parse(storedUser))
         }
         setIsLoading(false)
     }, [])
 
-    const login = (email: string, role: UserRole) => {
-        const mockUser: User = {
-            id: '1',
-            name: email.split('@')[0], // Mock name from email
-            email,
-            role
+    const login = async (email: string, password: string) => {
+        try {
+            const response = await api.post('/login', { email, password })
+            const { token, user } = response.data
+            localStorage.setItem('token', token)
+            localStorage.setItem('canchas_user', JSON.stringify(user))
+            setUser(user)
+        } catch (error) {
+            console.error('Login failed:', error)
+            throw error
         }
-        setUser(mockUser)
-        localStorage.setItem('canchas_user', JSON.stringify(mockUser))
+    }
+
+    const register = async (email: string, password: string, name: string, role?: string) => {
+        try {
+            const response = await api.post('/register', { email, password, name, role })
+            const { token, user } = response.data
+            localStorage.setItem('token', token)
+            localStorage.setItem('canchas_user', JSON.stringify(user))
+            setUser(user)
+        } catch (error) {
+            console.error('Registration failed:', error)
+            throw error
+        }
     }
 
     const logout = () => {
         setUser(null)
         localStorage.removeItem('canchas_user')
+        localStorage.removeItem('token')
     }
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
             {children}
         </AuthContext.Provider>
     )

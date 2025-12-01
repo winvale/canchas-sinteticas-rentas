@@ -11,19 +11,35 @@ export function Login() {
     const [password, setPassword] = useState("")
     const [role, setRole] = useState<'player' | 'admin'>('player')
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState("")
     const { login } = useAuth()
     const navigate = useNavigate()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
+        setError("")
 
-        // Simulate API call
-        setTimeout(() => {
-            login(email, role)
+        try {
+            await login(email, password)
+            // Get user from storage since state update might be async
+            const storedUser = localStorage.getItem('canchas_user')
+            if (storedUser) {
+                const user = JSON.parse(storedUser)
+                if (user.role === 'admin') {
+                    navigate('/admin')
+                } else {
+                    navigate('/player')
+                }
+            } else {
+                // Fallback
+                navigate('/player')
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.message || "Error al iniciar sesión")
+        } finally {
             setIsLoading(false)
-            navigate(role === 'admin' ? '/admin' : '/player')
-        }, 1000)
+        }
     }
 
     return (
@@ -35,6 +51,12 @@ export function Login() {
 
             <Card className="p-6 bg-white/5 border-none">
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded-lg text-sm text-center">
+                            {error}
+                        </div>
+                    )}
+
                     {/* Role Selection */}
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <button
