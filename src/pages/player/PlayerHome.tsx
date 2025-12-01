@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router-dom"
 import { Button } from "../../components/ui/Button"
 import { Card } from "../../components/ui/Card"
 import { MapPin, Star, Clock } from "lucide-react"
 
 export function PlayerHome() {
+    const navigate = useNavigate()
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -63,28 +65,53 @@ export function PlayerHome() {
 
                 <div className="space-y-4">
                     {[1, 2, 3].map((i) => (
-                        <Card key={i} className="flex p-3 space-x-4 hover:bg-white/5 transition-colors cursor-pointer">
-                            <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0">
-                                <img
-                                    src={`https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&q=80&w=300&text=${i}`}
-                                    alt="Field"
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="flex-1 py-1">
-                                <div className="flex justify-between items-start">
-                                    <h4 className="font-bold text-white">Cancha Sintética #{i}</h4>
-                                    <div className="flex items-center text-yellow-400 text-xs font-bold">
-                                        <Star className="w-3 h-3 mr-1 fill-current" />
-                                        4.8
+                        <Card
+                            key={i}
+                            className="flex flex-col p-3 space-y-3 hover:bg-white/5 transition-colors cursor-pointer group"
+                            onClick={() => navigate('/player/book', { state: { fieldId: i } })}
+                        >
+                            <div className="flex space-x-4">
+                                <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0">
+                                    <img
+                                        src={`https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&q=80&w=300&text=${i}`}
+                                        alt="Field"
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                </div>
+                                <div className="flex-1 py-1">
+                                    <div className="flex justify-between items-start">
+                                        <h4 className="font-bold text-white group-hover:text-primary transition-colors">Cancha Sintética #{i}</h4>
+                                        <div className="flex items-center text-yellow-400 text-xs font-bold">
+                                            <Star className="w-3 h-3 mr-1 fill-current" />
+                                            4.8
+                                        </div>
+                                    </div>
+                                    <p className="text-gray-400 text-xs mt-1 line-clamp-2">
+                                        Cancha profesional de fútbol 5, iluminación LED y vestuarios.
+                                    </p>
+                                    <div className="mt-3 flex justify-between items-center">
+                                        <span className="text-primary font-bold text-sm">$80.000/h</span>
+                                        <Button size="sm" className="h-8 px-3 text-xs">Reservar</Button>
                                     </div>
                                 </div>
-                                <p className="text-gray-400 text-xs mt-1 line-clamp-2">
-                                    Cancha profesional de fútbol 5, iluminación LED y vestuarios.
-                                </p>
-                                <div className="mt-3 flex justify-between items-center">
-                                    <span className="text-primary font-bold text-sm">$80.000/h</span>
-                                    <Button size="sm" className="h-8 px-3 text-xs">Reservar</Button>
+                            </div>
+
+                            {/* Quick Book Slots */}
+                            <div className="pt-2 border-t border-white/5">
+                                <p className="text-xs text-gray-500 mb-2 font-medium">Horarios disponibles hoy:</p>
+                                <div className="flex space-x-2 overflow-x-auto no-scrollbar pb-1">
+                                    {["18:00", "20:00", "22:00"].map((time) => (
+                                        <button
+                                            key={time}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                navigate('/player/book', { state: { fieldId: i, time: time } })
+                                            }}
+                                            className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-primary hover:text-white text-gray-300 text-xs font-medium transition-colors border border-white/5"
+                                        >
+                                            {time}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </Card>

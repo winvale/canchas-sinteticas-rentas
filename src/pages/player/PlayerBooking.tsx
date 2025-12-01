@@ -1,12 +1,24 @@
-import { useState } from "react"
+import { useLocation } from "react-router-dom"
+import { useState, useEffect } from "react"
 import { Button } from "../../components/ui/Button"
 import { Card } from "../../components/ui/Card"
 import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "../../lib/utils"
 
 export function PlayerBooking() {
+    const location = useLocation()
     const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate())
     const [selectedTime, setSelectedTime] = useState<string | null>(null)
+    const [fieldName, setFieldName] = useState<string>("Cancha")
+
+    useEffect(() => {
+        if (location.state?.time) {
+            setSelectedTime(location.state.time)
+        }
+        if (location.state?.fieldId) {
+            setFieldName(`Cancha Sintética #${location.state.fieldId}`)
+        }
+    }, [location.state])
 
     const dates = Array.from({ length: 7 }, (_, i) => {
         const d = new Date()
@@ -25,10 +37,13 @@ export function PlayerBooking() {
     return (
         <div className="space-y-6">
             <header className="flex items-center space-x-4">
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button variant="ghost" size="icon" className="rounded-full" onClick={() => window.history.back()}>
                     <ChevronLeft className="w-6 h-6" />
                 </Button>
-                <h1 className="text-xl font-bold text-white">Reservar Cancha</h1>
+                <div>
+                    <h1 className="text-xl font-bold text-white">Reservar</h1>
+                    <p className="text-primary text-sm font-medium">{fieldName}</p>
+                </div>
             </header>
 
             {/* Calendar Strip */}
